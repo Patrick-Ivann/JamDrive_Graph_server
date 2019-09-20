@@ -11,7 +11,8 @@ cache: npm
 
 before_install:
 
-- openssl aes-256-cbc -K $encrypted_966c6a8f00fd_key -iv $encrypted_966c6a8f00fd_iv -in travis_jamdriveServerGraphql_rsa.enc -out travis_jamdriveServerGraphql_rsa -d- chmod 600 travis_rsa
+- openssl aes-256-cbc -K $encrypted_966c6a8f00fd_key -iv $encrypted_966c6a8f00fd_iv -in travis_jamdriveServerGraphql_rsa.enc -out travis_jamdriveServerGraphql_rsa -d
+- chmod 600 travis_rsa
 - mv travis_rsa ~/.ssh/id_rsa
 
 install: 
