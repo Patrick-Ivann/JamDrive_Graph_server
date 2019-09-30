@@ -3,7 +3,8 @@ import {
     GraphQLError
 } from "graphql";
 import {
-    unlink, createWriteStream
+    unlink,
+    createWriteStream
 } from "fs";
 import {
     UserInputError
@@ -20,7 +21,9 @@ import {
     readToken,
     extractToken
 } from "./utils/authHelpers";
-import { Stream } from "stream";
+import {
+    Stream
+} from "stream";
 
 export const FileResolver = {
 
@@ -66,7 +69,7 @@ export const FileResolver = {
 
             let err, result;
 
-            const [err, result] = await to(newFile.save());
+            [err, result] = await to(newFile.save());
 
             if (err) return GraphQLError(err)
 
@@ -108,7 +111,7 @@ export const FileResolver = {
 
             let err, result;
 
-            const [err, result] = await to(newFile.save());
+            [err, result] = await to(newFile.save());
 
             if (err) return GraphQLError(err)
 
@@ -127,8 +130,6 @@ export const FileResolver = {
         },
         UploadRessource: async (root, args, context) => {
 
-            const validationError = {}
-
             const {
                 createReadStream,
                 filename,
@@ -141,7 +142,7 @@ export const FileResolver = {
             const {
                 validationError,
                 returned
-            } = isValideRessourceName(filename, validationError)
+            } = isValideRessourceName(filename, {})
 
 
             if (!returned) {
@@ -174,8 +175,8 @@ export const FileResolver = {
 
             let err, result;
 
-            const [err, result] = await to(newFile.save());
-            
+            [err, result] = await to(newFile.save());
+
 
             if (err) return GraphQLError(err)
 
@@ -189,7 +190,7 @@ export const FileResolver = {
                 newFile: newFile,
             });
             return result
-            
+
         },
         DeleteProsit: async (root, args, context) => {
 
@@ -197,11 +198,11 @@ export const FileResolver = {
                 id
             } = args;
             let err, prosit;
-            const [err, prosit] = await to(Fichiers.findOneAndDelete(args.id))
+            [err, prosit] = await to(Fichiers.findOneAndDelete(args.id))
 
             if (err) return err
 
-            const [err, file] = await to(unlink(prosit.path));
+            [err, file] = await to(unlink(prosit.path));
             if (err) return err
 
             return true
@@ -214,11 +215,11 @@ export const FileResolver = {
                 id
             } = args;
             let err, ressource;
-            const [err, file] = await to(unlink(prosit.path));
+            [err, file] = await to(unlink(prosit.path));
             if (err) return err
 
 
-            const [err, prosit] = await to(ressources.findOneAndDelete(args.id))
+            [err, prosit] = await to(ressources.findOneAndDelete(args.id))
 
             if (err) return err
 
