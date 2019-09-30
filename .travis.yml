@@ -9,22 +9,22 @@ script:
 cache: npm
 
 
-before_install:
+# before_install:
 
-- openssl aes-256-cbc -K $encrypted_966c6a8f00fd_key -iv $encrypted_966c6a8f00fd_iv -in travis_jamdriveServerGraphql_rsa.enc -out travis_jamdriveServerGraphql_rsa -d
-- chmod 600 travis_rsa
-- mv travis_rsa ~/.ssh/id_rsa
+# - openssl aes-256-cbc -K $encrypted_966c6a8f00fd_key -iv $encrypted_966c6a8f00fd_iv -in travis_jamdriveServerGraphql_rsa.enc -out travis_jamdriveServerGraphql_rsa -d
+# - chmod 600 travis_rsa
+# - mv travis_rsa ~/.ssh/id_rsa
 
-install: 
-- npm install @babel/cli@^7.0.0-rc.1 -g
-- npm install @babel/core@^7.0.0-rc.1 -g
-- npm install 
+# install: 
+# - npm install @babel/cli@^7.0.0-rc.1 -g
+# - npm install @babel/core@^7.0.0-rc.1 -g
+# - npm install 
 
-after_successs:
-- bash ./deploy.sh
+# after_successs:
+# - bash ./deploy.sh
 
 
 
-addons:
-  ssh_known_hosts:
-  - 104.248.167.41
+# addons:
+#   ssh_known_hosts:
+#   - 104.248.167.41
