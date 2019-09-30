@@ -8,6 +8,15 @@ const RessourcesSchema = new Schema({
         urlRessource: {
             type: String,
         },
+        filename:{
+            type:String
+        },
+        encoding:{
+            type:String
+        },
+        mimetype:{
+            type:String
+        },
         prositId : "String",
         promoId: "String"
 
@@ -22,7 +31,6 @@ RessourcesSchema.set('toJSON', {
     virtuals: true
 });
 
-RessourcesSchema.virtual('id').get('nomShort', () => {this.nomProsit.split("_")[2];});
 
 RessourcesSchema.plugin(mongooseLeanVirtuals);
 
