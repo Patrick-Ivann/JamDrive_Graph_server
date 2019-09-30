@@ -9,10 +9,11 @@ import { PromoResolver } from './resolvers/PromoResoler.js';
 import { corsWrapper } from '../CORS.js';
 import PROMOTYPEDEFS from './schemas/Promo.js';
 import PROSITTYPEDEFS from './schemas/Prosit.js';
+import { ROOTTYPEDEFS } from './schemas/Root.js';
 // GraphQL: Schema
 const APOLLOSERVER = new ApolloServer({
     cors: corsWrapper(),
-    typeDefs: [PROMOTYPEDEFS,PROSITTYPEDEFS],
+    typeDefs: [ROOTTYPEDEFS,PROMOTYPEDEFS,PROSITTYPEDEFS],
     resolvers: [PrositResolver, PromoResolver],
     subscriptions: {
         path:'/subscription',
