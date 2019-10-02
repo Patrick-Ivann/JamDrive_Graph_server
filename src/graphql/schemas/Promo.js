@@ -5,10 +5,12 @@ import {
   
   // GraphQL: TypeDefs
   const PROMOTYPEDEFS = gql `
-  type Query {
+ 
+  extend type Query {
     promos: [Promo]
     promo: Promo
     promoById(id:ID!):Promo
+    himself: Utilisateur @isAuthenticated
   }
   
   type Promo {
@@ -23,21 +25,22 @@ import {
    type Utilisateur {
     _id: ID!
     promoId: String!  
+    role:Role!
     motDePasse:String!
   }
   
-  type Mutation {
-    pushPromo(promo:String!
-        motDePasse:String!
-        superMotDePasse:String!): Promo
+  extend type Mutation {
+    pushPromo(promo:String!): Promo
     popPromo(_id: ID!): ID
+    pushUtilisateur(promoId:String! motDePasse:String! role:Role!): Utilisateur
+    popUtilisateur(_id: ID!): ID
 
-    pushUtilisateur(promoId:String!
-      motDePasse:String!): Utilisateur
-  popUtilisateur(_id: ID!): ID
+    loginUser(motDePasse:String!):Utilisateur
+    logoutUser:Boolean
+
   }
   
-    type Subscription {
+ extend type Subscription {
       newPromo: [Promo]
       PromoDeleted :[Promo]
     }

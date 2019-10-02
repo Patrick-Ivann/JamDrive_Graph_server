@@ -4,7 +4,14 @@ import {
   
   // GraphQL: TypeDefs
  export const ROOTTYPEDEFS = gql `
-  #directive @isAuthenticated on FIELD | FIELD_DEFINITION
+  enum Role {
+    admin
+    editor
+    supervisor
+    user
+  }
+
+  directive @isAuthenticated on FIELD | FIELD_DEFINITION
   directive @hasRole(role: String) on FIELD | FIELD_DEFINITION
   type Query {
     _:Boolean
