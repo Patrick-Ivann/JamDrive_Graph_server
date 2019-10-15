@@ -9,17 +9,18 @@ const UtilisateurSchema = new Schema({
         unique: true
     },
 
-    promo: {
+    promoId: {
         type: String,
         required: true,
         unique: true
     },
 
-    superMotDePasse: {
+    role:{
         type: String,
         required: true,
-        unique: true
-    },
+    }
+
+    
 
 }, {
     timestamps: true,

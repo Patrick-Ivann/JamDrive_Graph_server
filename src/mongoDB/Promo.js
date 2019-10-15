@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const mongooseLeanVirtuals = require('mongoose-lean-virtuals');
 const Schema = mongoose.Schema;
 
+/**
+ * TODO ajouter champ "Annee" à faire incrementer une fois par an via un service de script 
+ */
+
 const PromoSchema = new Schema({
 
 
@@ -11,7 +15,13 @@ const PromoSchema = new Schema({
         unique: true
     },
 
-    debutValiditie: {
+    annee: {
+
+        type:String,
+        required:true
+    },
+
+    debutValidite: {
         type: Date,
         required: true,
         default: Date.now

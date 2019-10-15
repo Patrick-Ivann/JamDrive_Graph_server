@@ -1,9 +1,15 @@
+import  mongoose  from "mongoose";
+
+const mongooseLeanVirtuals = require('mongoose-lean-virtuals');
 const Schema = mongoose.Schema;
 
 const PrositFichierSchema = new Schema({
 
     title: {
         type: String
+    },
+    nom:{
+        type:String
     },
     path: {
         type: String,

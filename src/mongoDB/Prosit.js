@@ -18,22 +18,8 @@ const PrositSchema = new Schema({
     },
 
     validation: {
-        type: Number,
-        default: 0,
-    },
-
-    type: {
         type: Boolean,
-    },
-    
-    nomScribe: {
-        type: String,
-        required: true
-    },
-    
-    annee: {
-        type: String,
-        required: true
+        default: false
     },
 
     motsClef: {
