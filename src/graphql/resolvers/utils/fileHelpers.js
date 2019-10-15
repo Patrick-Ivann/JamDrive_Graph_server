@@ -9,7 +9,7 @@ import {
  * @returns {{validationError: Boolean, returned: Boolean}}  
  */
 export const isValideRessourceName = (filename, validationError) => {
-    validationError.formatUnite = "Le titre du document ne respecte pas les convention XX_ressources_nomProsit_nomRessource_ue xx_ressources_titreDocument_titreProsit-ue."
+    validationError.formatUnite = "Le titre du document ne respecte pas les convention XX_ressources_nom_eleve.docx."
 
     return (/^(\d{1,2})(_)(ressources)(_)(\w+)(_)(\w+)(_)(\w+)/.test(filename)) ? {
         validationError: validationError,
@@ -24,13 +24,10 @@ export const isValideRessourceName = (filename, validationError) => {
 /**
  * 
  * @param {String} filename 
- * @returns {{unite:String, prositId: String, prositNom: String, nomRessource:String}}
+ * @returns {{ nomRessource:String}} obj
  */
 export const extractVariableFromFileName = filename => {
     return {
-        unite: filename.split("_")[filename.split('_').length - 1].split(".")[0],
-        prositId: filename.split("_")[0],
-        prositNom: filename.split("_")[2],
         nomRessource: filename.split("_")[3]
     }
 

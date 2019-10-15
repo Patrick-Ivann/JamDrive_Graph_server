@@ -4,7 +4,7 @@ import {
 } from "graphql";
 import {
     unlink,
-    createWriteStream
+    createWriteStream,
 } from "fs";
 import {
     UserInputError
@@ -24,8 +24,12 @@ import {
 import {
     Stream
 } from "stream";
+import to from "../../utils";
+import { PubSub } from "graphql-subscriptions";
 
+const pubsub = new PubSub();
 export const FileResolver = {
+    
 
 
     Query: {
@@ -36,10 +40,7 @@ export const FileResolver = {
         PrositRetour: async () => Fichiers.find({
             typeFichier: "retour"
         }),
-        Prosit: async (_, args) => Fichiers.findOneById(args.id),
-
-        Prosits: async () => Fichiers.find(),
-
+       
     },
 
     Mutation: {
@@ -53,13 +54,21 @@ export const FileResolver = {
             } = await args.file;
 
 
+            const {
+                title,
+                nom,
+                prositId
+            } = await args;
 
-
-            let path = join(__dirname, '../../../fichiers/aller/') + filename
+            const {user:user} = await readToken(await extractToken(context), context.secret)
+         
+            let path = join(__dirname, '../../../fichiers/aller/')+  user.promoId +"_"  + filename 
 
             const newFile = new Fichiers({
-                id: mongoObjectId(),
-                title: args.title,
+                //id: mongoObjectId(),
+                title: title,
+                nom: nom,
+                prositId:prositId,
                 path: path,
                 filename: filename,
                 mimetype: mimetype,
@@ -70,15 +79,21 @@ export const FileResolver = {
             let err, result;
 
             [err, result] = await to(newFile.save());
-
-            if (err) return GraphQLError(err)
+           
+            if (err) return GraphQLError({
+                err
+            })
 
             const stream = createReadStream()
+            try {    
+                stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/aller/') + user.promoId +"_" + newFile.filename))
+            } catch (error) {
+                console.log("bobo le code")
+            }
+            
 
-            stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/aller/') + newFile.filename))
 
-
-            pubsub.publish(FILE_SUBSCRIPTION_TOPIC, {
+            pubsub.publish("FILE_SUBSCRIPTION_TOPIC", {
                 newFile: newFile,
             });
             return result
@@ -94,14 +109,22 @@ export const FileResolver = {
                 encoding
             } = await args.file;
 
+            const {
+                title,
+                nom,
+                prositId,
+            } = await args;
 
+            const {user:user} = await readToken(await extractToken(context), context.secret)
 
-
-            let path = join(__dirname, '../../../fichiers/retour/') + filename
+            let path = join(__dirname, '../../../fichiers/retour/') + user.promoId + "_"+ filename
 
             const newFile = new Fichiers({
-                id: mongoObjectId(),
-                title: args.title,
+                // id: mongoObjectId(),
+                title: title,
+                nom: nom,
+                prositId:prositId,
+                promoId:user.promoId,
                 path: path,
                 filename: filename,
                 mimetype: mimetype,
@@ -113,19 +136,190 @@ export const FileResolver = {
 
             [err, result] = await to(newFile.save());
 
-            if (err) return GraphQLError(err)
+            if (err) return GraphQLError({
+                err
+            })
 
             const stream = createReadStream()
+            
+            try {    
+                stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/retour/') + user.promoId +"_" + newFile.filename))
+            } catch (error) {
+                console.log("bobo le code")
+            }
 
-            stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/retour/') + newFile.filename))
 
-
-            pubsub.publish(FILE_SUBSCRIPTION_TOPIC, {
+            pubsub.publish("FILE_SUBSCRIPTION_TOPIC", {
                 newFile: newFile,
             });
             return result
 
 
+
+        },
+        UploadProfRessource: async (root, args, context) => {
+
+            const {
+                createReadStream,
+                filename,
+                mimetype,
+                encoding
+            } = await args.file;
+
+            const {
+                title,
+                nom,
+                unite,
+                prositId
+            } = await args;
+
+
+
+/*             const {
+                validationError,
+                returned
+            } = isValideRessourceName(filename, {})
+
+
+            if (!returned) {
+                throw new UserInputError(validationError)
+            } */
+
+
+            const {user:user} = await readToken(await extractToken(context), context.secret)
+
+            let path = join(__dirname, '../fichiers/ressources/')  + user.promoId + "_"+ filename
+
+/*             const newFile = new ressources({
+                //  id: mongoObjectId(),
+                title: title,
+                nomRessource: nom,
+                unite:unite,
+                urlRessource: path,
+                filename: filename,
+                mimetype: mimetype,
+                prositId: prositId,
+                specificite: "prof",
+                promoId: user.promoId,
+                encoding: encoding,
+
+            }); */
+
+            const newFile = new Fichiers({
+                // id: mongoObjectId(),
+                title: title,
+                nom: nom,
+                prositId:prositId,
+                promoId:user.promoId,
+                path: path,
+                filename: filename,
+                mimetype: mimetype,
+                encoding: encoding,
+                typeFichier: "ressource_prof"
+            });
+
+            let err, result;
+
+            [err, result] = await to(newFile.save());
+            console.log(err)
+            console.log(result)
+
+            if (err) return GraphQLError({
+                err
+            })
+
+            const stream = createReadStream()
+
+
+            stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/ressource/')+ user.promoId +"_" + newFile.filename))
+
+
+            pubsub.publish("FILE_SUBSCRIPTION_TOPIC", {
+                newFile: newFile,
+            });
+            return result
+
+        },
+        UploadEleveRessource: async (root, args, context) => {
+
+            const {
+                createReadStream,
+                filename,
+                mimetype,
+                encoding
+            } = await args.file;
+
+            const {
+                title,
+                nom,
+                unite,
+                prositId
+            } = await args;
+
+
+
+/*             const {
+                validationError,
+                returned
+            } = isValideRessourceName(filename, {})
+
+
+            if (!returned) {
+                throw new UserInputError(validationError)
+            }
+ */
+
+            const {user:user} = await readToken(await extractToken(context), context.secret)
+
+            let path = join(__dirname, '../fichiers/ressources/')  + user.promoId  + "_"+ filename
+
+           /*  const newFile = new ressources({
+                //  id: mongoObjectId(),
+                title: title,
+                nomRessource: nom,
+                unite:unite,
+                urlRessource: path,
+                filename: filename,
+                mimetype: mimetype,
+                prositId: prositId,
+                specificite: "eleve",
+                promoId: user.promoId,
+                encoding: encoding,
+
+            }); */
+
+            const newFile = new Fichiers({
+                // id: mongoObjectId(),
+                title: title,
+                nom: nom,
+                prositId:prositId,
+                promoId:user.promoId,
+                path: path,
+                filename: filename,
+                mimetype: mimetype,
+                encoding: encoding,
+                typeFichier: "ressource_eleve"
+            });
+
+            let err, result;
+
+            [err, result] = await to(newFile.save());
+
+
+            if (err) return GraphQLError({
+                err
+            })
+
+            const stream = createReadStream()
+
+
+            stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/ressource/') +  user.promoId +"_" + newFile.filename ))
+
+
+            pubsub.publish("FILE_SUBSCRIPTION_TOPIC", {
+                newFile: newFile,
+            });
+            return result
 
         },
         UploadRessource: async (root, args, context) => {
@@ -137,6 +331,11 @@ export const FileResolver = {
                 encoding
             } = await args.file;
 
+            const {
+                title,
+                nom,
+                prositId
+            } = await args;
 
 
             const {
@@ -149,12 +348,6 @@ export const FileResolver = {
                 throw new UserInputError(validationError)
             }
 
-            const {
-                unite,
-                prositId,
-                prositNom,
-                nomRessource
-            } = extractVariableFromFileName(filename)
 
 
             const user = await readToken(await extractToken(context), context.secret)
@@ -162,12 +355,13 @@ export const FileResolver = {
             path = join(__dirname, '../fichiers/ressources/') + filename;
 
             const newFile = new ressources({
-                id: mongoObjectId(),
+                //  id: mongoObjectId(),
                 nomRessource: nomRessource,
                 urlRessource: path,
                 filename: filename,
                 mimetype: mimetype,
-                prositId: args.prositId,
+                prositId: prositId,
+                specificite: "prof",
                 promoId: user.promoId,
                 encoding: encoding,
 
@@ -178,7 +372,9 @@ export const FileResolver = {
             [err, result] = await to(newFile.save());
 
 
-            if (err) return GraphQLError(err)
+            if (err) return GraphQLError({
+                err
+            })
 
             const stream = createReadStream()
 
@@ -186,7 +382,7 @@ export const FileResolver = {
             stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/aller/') + newFile.filename))
 
 
-            pubsub.publish(FILE_SUBSCRIPTION_TOPIC, {
+            pubsub.publish("FILE_SUBSCRIPTION_TOPIC", {
                 newFile: newFile,
             });
             return result
