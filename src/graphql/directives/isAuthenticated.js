@@ -12,17 +12,27 @@ import {
 export class isAuthenticatedDirective extends SchemaDirectiveVisitor {
 
     visitFieldDefinition(field) {
-        field.resolve = async (result, args, context) => {
+        const {
+            resolve = defaultFieldResolver
+        } = field;
+
+        field.resolve = async (...args) => {
+
+            const [, , context] = args
 
             const token = await extractToken(context);
-
             try {
-                const _ = await readToken(token);
+                const _ = await readToken(token, context.secret);
+
+                const result = await resolve.apply(this, args);
+                console.log(result)
                 return result[field.name];
             } catch (error) {
-                throw new AuthenticationError({
-                    message: "Non autorisé à acceder à cette ressource"
-                });
+
+                console.log(error)
+                throw new AuthenticationError(
+                    "Non autorisé à acceder à cette ressource"
+                );
             }
         }
     }
