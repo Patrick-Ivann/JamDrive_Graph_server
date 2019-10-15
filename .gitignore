@@ -97,3 +97,5 @@ travis-editor.txt
 build
 JamDrive_Graph_Server.code-workspace
 travis_jamdriveServerGraphql_rsa.enc
+fichiers
+*.docx
