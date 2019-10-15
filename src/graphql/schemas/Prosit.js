@@ -6,10 +6,13 @@ import {
 // GraphQL: TypeDefs
 const PROSITTYPEDEFS = gql `
 extend type Query {
-  prosits: [Prosit]
-  prosit: Prosit
-  prositByPromo(idPromo:ID!):Prosit
-  prositById(id:ID!):Prosit
+  prosits: [Prosit!]!
+  prosit: Prosit!
+  prositsByPromo:[Prosit!]
+  prositsByPromoId(idPromo:ID!):[Prosit!]
+  prositById(id:ID!):Prosit!
+  PrositAller:[Prosit!]
+  PrositRetour:[Prosit!]
 }
 
 type Prosit {
@@ -21,16 +24,18 @@ type Prosit {
   promoId: String!
   ressources: [Ressource]
   aller: String
+  allerFichier:PrositFile!
+  retourFichier:PrositFile
+  ressourceProf:[Ressource]!
+  ressourceEleve:[Ressource]!
   retour: String
+  createdAt:DateTime!
+  updatedAt:DateTime!
 }
 
-type Ressource {
-  nomRessource: String
-  urlRessource: String
-}
 
 extend type Mutation {
-  pushProsit(validation: Int, motsClef: String, unite: String!, nomProsit: String!, promoId: String!): Prosit
+  pushProsit(validation: Int, motsClef: String, unite: String!, nomProsit: String!): Prosit
   popProsit(_id: ID!): Boolean
   updateProsit(validation: String, motsClef: String, unite: String): Prosit
 }

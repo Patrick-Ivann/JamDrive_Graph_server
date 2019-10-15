@@ -17,8 +17,10 @@ import {
     _id: ID!
     promo: String!  
     utilisateurs: [Utilisateur]
-    debutValidite:String!
-    finValidite:String!
+    debutValidite:DateTime!
+    finValidite:DateTime!
+    createdAt:DateTime!
+    updatedAt:DateTime!
   }
 
 
@@ -27,6 +29,14 @@ import {
     promoId: String!  
     role:Role!
     motDePasse:String!
+    createdAt:DateTime!
+    updatedAt:DateTime!
+  }
+
+  type SignIn {
+    user:Utilisateur,
+    token: String
+    refreshToken:String
   }
   
   extend type Mutation {
@@ -35,7 +45,7 @@ import {
     pushUtilisateur(promoId:String! motDePasse:String! role:Role!): Utilisateur
     popUtilisateur(_id: ID!): ID
 
-    loginUser(motDePasse:String!):Utilisateur
+    loginUser(motDePasse:String!):SignIn
     logoutUser:Boolean
 
   }
