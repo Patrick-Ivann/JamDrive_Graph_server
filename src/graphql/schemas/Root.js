@@ -4,6 +4,10 @@ import {
   
   // GraphQL: TypeDefs
  export const ROOTTYPEDEFS = gql `
+
+ scalar DateTime
+
+
   enum Role {
     admin
     editor
