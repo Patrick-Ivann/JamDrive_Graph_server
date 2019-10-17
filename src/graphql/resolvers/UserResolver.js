@@ -80,9 +80,8 @@ export const UserResolver = {
 
         },
 
-        logoutUser: async (root, args, context) => {
-            true
-        }
+        logoutUser: async (root, args, context) => true
+
 
 
     },
