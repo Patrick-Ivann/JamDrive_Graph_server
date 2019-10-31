@@ -13,6 +13,10 @@ import {
     extractToken
 } from "./utils/authHelpers";
 import Fichiers from "../../mongoDB/PrositFichier";
+import {
+    Mongoose
+} from "mongoose";
+
 
 export const PrositResolver = {
 
@@ -31,7 +35,110 @@ export const PrositResolver = {
         },
         prositsByPromoId: async (root, args, context) => await Prosits.find({
             promo: args.id
-        })
+        }),
+
+        prositsByUnite: async (root, args, context) => {
+            
+            let err, user;
+            [err, user] = await to(readToken(await extractToken(context), context.secret))
+            if (err) throw new AuthenticationError(err)
+
+            return await Prosits.find({
+                promoId: user.user.promoId,
+                unite: args.unite
+            })
+
+        }
+
+
+        // unites: async (root, args, ctx) => {
+        //     // let err, rrr;
+        //     // [err, rrr] = await to(Prosits.aggregate(
+        //     //     [{
+        //     //             $group: {
+        //     //                 _id: {
+        //     //                     _id: "$_id",
+        //     //                     unite: "$unite",
+        //     //                     nomProsit: "$nomProsit",
+        //     //                     motsClef: "$motsClef",
+        //     //                     validation: "$validation",
+        //     //                     promoId: "$promoId",
+        //     //                     createdAt: "$createdAt",
+        //     //                     updatedAt:"$updatedAt"
+        //     //                 },
+        //     //                 nomProsit: {
+        //     //                     $push: "$nomProsit"
+        //     //                 },
+        //     //                 __id: {
+        //     //                     $push: "$_id"
+        //     //                 },
+        //     //                 nombreProsit: {
+        //     //                     $sum: 1
+        //     //                 },
+        //     //             },
+        //     //         },
+
+        //     //         // {
+        //     //         //     $unwind: "$_id.motsClef"
+        //     //         // },
+
+        //     //     ]
+        //     // ).exec())
+        //     // console.log(err)
+        //     // console.log(rrr)
+        //     // // console.log(Prosits.aggregate().group({'unite': 1}).exec())
+
+        //     // // console.log(object)
+        //     // return rrr
+
+
+        //     let err, result;
+        //     [err, result] = await to(Prosits.aggregate(
+        //         [{
+        //             $group: {
+        //                 _id: {
+        //                     unite: "$unite",
+        //                 },
+        //                 nomProsit: {
+        //                     $push: "$nomProsit"
+        //                 },
+        //                 __id: {
+        //                     $push: "$_id"
+        //                 },
+        //                 nombreProsit: {
+        //                     $sum: 1
+        //                 },
+        //             },
+        //         }, ]
+        //     ).exec())
+        //     console.log(err)
+        //     // console.log(result)
+        //     result.forEach(element => {
+        //         // console.log(element._id.unite)
+        //         // console.log(element.__id)
+        //         element.__id.map(value => {
+        //             console.log(value)
+        //             console.log(Prosits.find({
+        //                 '_id': {
+        //                     $in: [
+        //                         value
+
+        //                     ]
+        //                 }
+        //             }))
+        //         })
+
+
+        //     });
+        //     // Prosits.find({
+        //     //     '_id': { $in: [
+        //     //         mongoose.Types.ObjectId('4ed3ede8844f0f351100000c'),
+        //     //         mongoose.Types.ObjectId('4ed3f117a844e0471100000d'), 
+        //     //         mongoose.Types.ObjectId('4ed3f18132f50c491100000e')
+        //     //     ]}
+        //     // }
+
+        // }
 
 
     },
@@ -145,6 +252,40 @@ export const PrositResolver = {
             return ressource;
         }
 
+    },
+
+    Unite: {
+        unite: async (root, args, context) => {
+
+            let err, result;
+            [err, result] = await to(Prosits.aggregate(
+                [{
+                        $group: {
+                            _id: {
+                                unite: "$unite",
+                            },
+                            nomProsit: {
+                                $push: "$nomProsit"
+                            },
+                            __id: {
+                                $push: "$_id"
+                            },
+                            nombreProsit: {
+                                $sum: 1
+                            },
+                        },
+                    },
+
+                    // {
+                    //     $unwind: "$_id.motsClef"
+                    // },
+
+                ]
+            ).exec())
+            console.log(err)
+            console.log(result)
+
+        }
     }
 
 

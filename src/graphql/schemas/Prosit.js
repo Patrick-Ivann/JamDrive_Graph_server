@@ -10,10 +10,20 @@ extend type Query {
   prosit: Prosit!
   prositsByPromo:[Prosit!]
   prositsByPromoId(idPromo:ID!):[Prosit!]
+  prositsByUnite(unite:String!):[Prosit]
   prositById(id:ID!):Prosit!
   PrositAller:[Prosit!]
   PrositRetour:[Prosit!]
+
+  unites:[Unite]!
 }
+
+type Unite {
+  promoId:String!
+  unite:String!
+  prosits:[Prosit]!
+}
+
 
 type Prosit {
   validation: Int
