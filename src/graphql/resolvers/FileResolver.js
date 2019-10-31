@@ -7,7 +7,7 @@ import {
     createWriteStream,
 } from "fs";
 import {
-    UserInputError
+    UserInputError, AuthenticationError, ApolloError
 } from "apollo-server-core";
 import {
     extractVariableFromFileName,
@@ -25,12 +25,20 @@ import {
     Stream
 } from "stream";
 import to from "../../utils";
-import { PubSub } from "graphql-subscriptions";
+import {
+    PubSub
+} from "graphql-subscriptions";
+import Prosits from "../../mongoDB/Prosit";
+import {
+    fetch
+} from "apollo-env";
 
 const pubsub = new PubSub();
 export const FileResolver = {
-    
 
+/**
+ * TODO ADD AN HTTP ERROR HANDLING METHOD TO FORMAT ERROR RESPONSE (throw ?)
+ */
 
     Query: {
 
@@ -40,7 +48,90 @@ export const FileResolver = {
         PrositRetour: async () => Fichiers.find({
             typeFichier: "retour"
         }),
-       
+
+
+        
+        filePathZippedByUnite: async (root, args, context) => {
+
+            let err, user, prositList, prositFileArray, urlToZip;
+            [err, user] = await to(readToken(await extractToken(context), context.secret))
+            if (err) throw new AuthenticationError(err)
+
+
+            [err, prositList] = await to(Prosits.find({
+                unite: args.unite,
+                promo: user.user.promoId
+            }));
+            if (err) {console.error(err); throw new ApolloError(err)}
+            const asyncFileFetching = async (element) => {
+                return await Fichiers.find({
+                    prositId: element._id
+                })
+            };
+
+            const getArrayOfPrositFile = async () => {
+                return await Promise.all(prositList.map(item => asyncFileFetching(item)))
+            }
+
+
+            [err, prositFileArray] = await to(getArrayOfPrositFile());
+            if (err) {console.error(err); throw new ApolloError(err)}
+            var dataToSendObj = {
+                toCompress: [prositFileArray.map(({
+                    path
+                }) => path)],
+                archiveName: `${args.unite}.zip`
+            };
+            var body = JSON.stringify(dataToSendObj);
+            [err, urlToZip] = await to(fetch(`${context.compressApiBaseUrl}/compress`, {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json",
+                    "Accept": "application/json",
+                    "Accept-Charset": "utf-8"
+                },
+                body: body
+
+            }));
+            if (err) {console.error(err); throw new ApolloError(err)}
+            return urlToZip.text();
+        },
+
+        filePathZippedByPrositId: async (root, args, context) => {
+
+            let err, user, fileArray, urlToZip;
+            [err, user] = await to(readToken(await extractToken(context), context.secret))
+            if (err) throw new AuthenticationError(err)
+
+            [err, fileArray] = await to( Fichiers.find({
+                promoId: user.user.promoId,
+                prositId: args.prositId
+            }));
+
+
+            if (err) {console.error(err); throw new ApolloError(err)}
+            
+            var dataToSendObj = {
+                toCompress: [fileArray.map(({
+                    path
+                }) => path)],
+                archiveName: `${fileArray[0].nom}.zip`
+            };
+            var body = JSON.stringify(dataToSendObj);
+            [err, urlToZip] = await to(fetch(`${context.compressApiBaseUrl}/compress`, {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json",
+                    "Accept": "application/json",
+                    "Accept-Charset": "utf-8"
+                },
+                body: body
+
+            }));
+            if (err) {console.error(err); throw new ApolloError(err)}
+            
+            return urlToZip.text();
+        }
     },
 
     Mutation: {
@@ -60,15 +151,17 @@ export const FileResolver = {
                 prositId
             } = await args;
 
-            const {user:user} = await readToken(await extractToken(context), context.secret)
-         
-            let path = join(__dirname, '../../../fichiers/aller/')+  user.promoId +"_"  + filename 
+            const {
+                user: user
+            } = await readToken(await extractToken(context), context.secret)
+
+            let path = join(__dirname, '../../../fichiers/aller/') + user.promoId + "_" + filename
 
             const newFile = new Fichiers({
                 //id: mongoObjectId(),
                 title: title,
                 nom: nom,
-                prositId:prositId,
+                prositId: prositId,
                 path: path,
                 filename: filename,
                 mimetype: mimetype,
@@ -79,18 +172,18 @@ export const FileResolver = {
             let err, result;
 
             [err, result] = await to(newFile.save());
-           
+
             if (err) return GraphQLError({
                 err
             })
 
             const stream = createReadStream()
-            try {    
-                stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/aller/') + user.promoId +"_" + newFile.filename))
+            try {
+                stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/aller/') + user.promoId + "_" + newFile.filename))
             } catch (error) {
                 console.log("bobo le code")
             }
-            
+
 
 
             pubsub.publish("FILE_SUBSCRIPTION_TOPIC", {
@@ -115,16 +208,18 @@ export const FileResolver = {
                 prositId,
             } = await args;
 
-            const {user:user} = await readToken(await extractToken(context), context.secret)
+            const {
+                user: user
+            } = await readToken(await extractToken(context), context.secret)
 
-            let path = join(__dirname, '../../../fichiers/retour/') + user.promoId + "_"+ filename
+            let path = join(__dirname, '../../../fichiers/retour/') + user.promoId + "_" + filename
 
             const newFile = new Fichiers({
                 // id: mongoObjectId(),
                 title: title,
                 nom: nom,
-                prositId:prositId,
-                promoId:user.promoId,
+                prositId: prositId,
+                promoId: user.promoId,
                 path: path,
                 filename: filename,
                 mimetype: mimetype,
@@ -141,9 +236,9 @@ export const FileResolver = {
             })
 
             const stream = createReadStream()
-            
-            try {    
-                stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/retour/') + user.promoId +"_" + newFile.filename))
+
+            try {
+                stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/retour/') + user.promoId + "_" + newFile.filename))
             } catch (error) {
                 console.log("bobo le code")
             }
@@ -175,42 +270,44 @@ export const FileResolver = {
 
 
 
-/*             const {
-                validationError,
-                returned
-            } = isValideRessourceName(filename, {})
+            /*             const {
+                            validationError,
+                            returned
+                        } = isValideRessourceName(filename, {})
 
 
-            if (!returned) {
-                throw new UserInputError(validationError)
-            } */
+                        if (!returned) {
+                            throw new UserInputError(validationError)
+                        } */
 
 
-            const {user:user} = await readToken(await extractToken(context), context.secret)
+            const {
+                user: user
+            } = await readToken(await extractToken(context), context.secret)
 
-            let path = join(__dirname, '../fichiers/ressources/')  + user.promoId + "_"+ filename
+            let path = join(__dirname, '../fichiers/ressources/') + user.promoId + "_" + filename
 
-/*             const newFile = new ressources({
-                //  id: mongoObjectId(),
-                title: title,
-                nomRessource: nom,
-                unite:unite,
-                urlRessource: path,
-                filename: filename,
-                mimetype: mimetype,
-                prositId: prositId,
-                specificite: "prof",
-                promoId: user.promoId,
-                encoding: encoding,
+            /*             const newFile = new ressources({
+                            //  id: mongoObjectId(),
+                            title: title,
+                            nomRessource: nom,
+                            unite:unite,
+                            urlRessource: path,
+                            filename: filename,
+                            mimetype: mimetype,
+                            prositId: prositId,
+                            specificite: "prof",
+                            promoId: user.promoId,
+                            encoding: encoding,
 
-            }); */
+                        }); */
 
             const newFile = new Fichiers({
                 // id: mongoObjectId(),
                 title: title,
                 nom: nom,
-                prositId:prositId,
-                promoId:user.promoId,
+                prositId: prositId,
+                promoId: user.promoId,
                 path: path,
                 filename: filename,
                 mimetype: mimetype,
@@ -231,7 +328,7 @@ export const FileResolver = {
             const stream = createReadStream()
 
 
-            stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/ressource/')+ user.promoId +"_" + newFile.filename))
+            stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/ressource/') + user.promoId + "_" + newFile.filename))
 
 
             pubsub.publish("FILE_SUBSCRIPTION_TOPIC", {
@@ -258,42 +355,44 @@ export const FileResolver = {
 
 
 
-/*             const {
-                validationError,
-                returned
-            } = isValideRessourceName(filename, {})
+            /*             const {
+                            validationError,
+                            returned
+                        } = isValideRessourceName(filename, {})
 
 
-            if (!returned) {
-                throw new UserInputError(validationError)
-            }
- */
+                        if (!returned) {
+                            throw new UserInputError(validationError)
+                        }
+             */
 
-            const {user:user} = await readToken(await extractToken(context), context.secret)
+            const {
+                user: user
+            } = await readToken(await extractToken(context), context.secret)
 
-            let path = join(__dirname, '../fichiers/ressources/')  + user.promoId  + "_"+ filename
+            let path = join(__dirname, '../fichiers/ressources/') + user.promoId + "_" + filename
 
-           /*  const newFile = new ressources({
-                //  id: mongoObjectId(),
-                title: title,
-                nomRessource: nom,
-                unite:unite,
-                urlRessource: path,
-                filename: filename,
-                mimetype: mimetype,
-                prositId: prositId,
-                specificite: "eleve",
-                promoId: user.promoId,
-                encoding: encoding,
+            /*  const newFile = new ressources({
+                 //  id: mongoObjectId(),
+                 title: title,
+                 nomRessource: nom,
+                 unite:unite,
+                 urlRessource: path,
+                 filename: filename,
+                 mimetype: mimetype,
+                 prositId: prositId,
+                 specificite: "eleve",
+                 promoId: user.promoId,
+                 encoding: encoding,
 
-            }); */
+             }); */
 
             const newFile = new Fichiers({
                 // id: mongoObjectId(),
                 title: title,
                 nom: nom,
-                prositId:prositId,
-                promoId:user.promoId,
+                prositId: prositId,
+                promoId: user.promoId,
                 path: path,
                 filename: filename,
                 mimetype: mimetype,
@@ -313,7 +412,7 @@ export const FileResolver = {
             const stream = createReadStream()
 
 
-            stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/ressource/') +  user.promoId +"_" + newFile.filename ))
+            stream.pipe(createWriteStream(join(__dirname, '../../../fichiers/ressource/') + user.promoId + "_" + newFile.filename))
 
 
             pubsub.publish("FILE_SUBSCRIPTION_TOPIC", {

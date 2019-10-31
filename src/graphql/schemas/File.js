@@ -6,6 +6,15 @@ import {
 // GraphQL: TypeDefs
 export const FILETYPEDEFS = gql `
 
+
+extend type Query {
+
+  filePathZippedByUnite(unite:String!): String!
+  filePathZippedByPrositId(prositId:String!): String!
+
+}
+
+
   type PrositFile {
     id: ID!
     title: String!
