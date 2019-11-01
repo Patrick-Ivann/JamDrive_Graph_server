@@ -7,43 +7,38 @@ import {
 export const FILETYPEDEFS = gql `
 
 
-extend type Query {
-
-  filePathZippedByUnite(unite:String!): String!
-  filePathZippedByPrositId(prositId:String!): String!
-
-}
 
 
-  type PrositFile {
-    id: ID!
-    title: String!
-    nom:String!
-    path: String!
-    filename: String!
-    mimetype: String!
-    encoding: String!
-    createdAt : DateTime!
-    updateAt: DateTime!
+
+type PrositFile {
+  id: ID!
+  title: String!
+  nom:String!
+  path: String!
+  filename: String!
+  mimetype: String!
+  encoding: String!
+  createdAt : DateTime!
+  updateAt: DateTime!
 }
 
 
 type Ressource {
-    id: ID!
-    title: String!
-    nom:String!
-    prositId:String!
-    promoId:String!
-    path: String!
-    filename: String!
-    mimetype: String!
-    encoding: String!
-    createdAt : DateTime!
+  id: ID!
+  title: String!
+  nom:String!
+  prositId:String!
+  promoId:String!
+  path: String!
+  filename: String!
+  mimetype: String!
+  encoding: String!
+  createdAt : DateTime!
     updatedAt: DateTime!
-}
-
-
-
+  }
+  
+  
+  
   extend type Mutation {
     UploadAllerProsit(file: Upload!,title:String!, nom:String!,prositId:ID!):PrositFile
     UploadRetourProsit(file: Upload!,title:String!, nom:String!,prositId:ID!):PrositFile!
@@ -52,7 +47,10 @@ type Ressource {
     UploadRessource(file: Upload!):Ressource!
     DeleteProsit(id:ID!):Boolean!
     DeleteRessource(id:ID!):Boolean
+
+    filePathZippedByUnite(unite:String!): String!
+    filePathZippedByPrositId(prositId:String!): String!
   }
 
-
+  
   `
