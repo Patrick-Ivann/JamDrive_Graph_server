@@ -34,7 +34,7 @@ type Prosit {
   promoId: String!
   ressources: [Ressource]
   aller: String
-  allerFichier:PrositFile!
+  allerFichier:PrositFile
   retourFichier:PrositFile
   ressourceProf:[Ressource]!
   ressourceEleve:[Ressource]!
@@ -46,14 +46,17 @@ type Prosit {
 
 extend type Mutation {
   pushProsit(validation: Int, motsClef: String, unite: String!, nomProsit: String!): Prosit
-  popProsit(_id: ID!): Boolean
+  popProsit(id: ID!): Boolean
   updateProsit(validation: String, motsClef: String, unite: String): Prosit
+  validateProsit(id:ID!):Boolean
 }
 
   extend type Subscription {
-    newProsit: [Prosit]
-    prositDeleted :[Prosit]
+    prositCreated: Prosit
+    prositDeleted :Prosit
     prositUpdated: Prosit
+    prositValidated: Prosit
+
   }
 
 `;
