@@ -15,6 +15,12 @@ const PromoSchema = new Schema({
         unique: true
     },
 
+    email: {
+        type: String,
+        required:true,
+    
+    },
+
     annee: {
 
         type:String,
