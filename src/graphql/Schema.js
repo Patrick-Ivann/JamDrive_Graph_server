@@ -46,6 +46,7 @@ const APOLLOSERVER = new ApolloServer({
 
     return {
       compressApiBaseUrl: "http://localhost:5000",
+      mailApiBaseUrl: "http://localhost:4999",
       secret: process.env.JWT_SECRET,
       req,
       res,
