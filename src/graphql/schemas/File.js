@@ -52,5 +52,9 @@ type Ressource {
     filePathZippedByPrositId(prositId:String!): String!
   }
 
+extend type Subscription{
+  allerPrositCreated: PrositFile
+  retourPrositCreated: PrositFile
+}
   
   `
